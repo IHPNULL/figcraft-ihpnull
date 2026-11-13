@@ -18,6 +18,10 @@ macro_rules! m {
 
 pub const SEP: &str = "-";
 
+/// Extra search terms the Actions palette reads, by command id: a name a feature had before it was
+/// renamed, so people who know the old name still find the command. Never shown.
+pub static SEARCH_ALIASES: &[(&str, &str)] = &[("view.devMode", "Dev Mode")];
+
 pub static MENU: &[MenuItem] = &[
     // File
     m!("File", "New design file", "file.new"),
@@ -216,6 +220,11 @@ pub static MENU: &[MenuItem] = &[
     m!("Text/Case", "Uppercase", "text.caseUpper"),
     m!("Text/Case", "Lowercase", "text.caseLower"),
     m!("Text/Case", "Title case", "text.caseTitle"),
+    // "Go to Text > Text direction. Select Left to right or Right to left." (Add right-to-left
+    // text); Auto, the way back to detection, is FigCraft's own (in `OWN`).
+    m!("Text/Text direction", "Auto", "text.directionAuto"),
+    m!("Text/Text direction", "Left to right", "text.directionLtr"),
+    m!("Text/Text direction", "Right to left", "text.directionRtl"),
     m!("Text", SEP, ""),
     m!("Text", "Missing fonts…", "text.missingFonts"),
     // Arrange
@@ -244,7 +253,10 @@ pub static MENU: &[MenuItem] = &[
     // Plugins
     m!("Plugins", "Run last plugin", "plugins.runLast"),
     m!("Plugins", "Manage plugins…", "plugins.manage"),
+    m!("Plugins", "Local MCP server…", "app.mcp"),
+    m!("Plugins/Development", "New plugin…", "plugin.newDialog"),
     m!("Plugins/Development", "Import plugin from manifest…", "plugin.import"),
+    m!("Plugins/Development", "Plugin console…", "plugins.console"),
     // Preferences
     m!("Preferences", "Snap to geometry", "view.snapGeometry"),
     m!("Preferences", "Snap to objects", "view.snapObjects"),
@@ -282,6 +294,7 @@ pub static MENU: &[MenuItem] = &[
     m!("Tools", "Pencil", "tool.pencil"),
     m!("Tools", "Text", "tool.text"),
     m!("Tools", "Comment", "tool.comment"),
+    m!("Tools", "Annotation", "tool.annotation"),
     m!("Tools", "Shape builder", "tool.shapeBuilder"),
     m!("Tools", "Actions", "app.actions"),
 ];
@@ -292,7 +305,17 @@ pub fn items() -> impl Iterator<Item = &'static MenuItem> {
 }
 
 /// Items of FigCraft's own that the parity count leaves out (as it does the `collab.` ones).
-const OWN: [&str; 5] = ["file.newFromTemplate", "file.newBoard", "help.gettingStarted", "text.missingFonts", "image.crop"];
+const OWN: [&str; 9] = [
+    "file.newFromTemplate",
+    "file.newBoard",
+    "help.gettingStarted",
+    "text.missingFonts",
+    "image.crop",
+    "text.directionAuto",
+    "app.mcp",
+    "plugin.newDialog",
+    "plugins.console",
+];
 
 /// Coverage: (implemented, total, missing ids). `extra` lists ids implemented by the UI layer.
 pub fn parity(extra: &[&str]) -> (usize, usize, Vec<&'static str>) {

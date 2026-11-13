@@ -103,8 +103,8 @@
 </tr>
 <tr>
 <td width="50%" valign="top">
-  <img src="docs/images/shot-4-devmode.png" alt="Dev Mode on the Ridgeline home screen: the frame carries a Ready for dev badge, a Development annotation callout points at the featured trail card, a trail row instance is selected and the Inspect panel shows a Playground preview of it and generated React code with a TrailRow props interface and the instance's title and details values" width="100%">
-  <p align="center"><sub><b>Dev Mode</b>: ready-for-dev status, annotations and React code where component properties become props · <code>examples/ridgeline-app.figcraft</code></sub></p>
+  <img src="docs/images/shot-4-devmode.png" alt="Developer Mode on the Ridgeline home screen: the frame carries a Ready for dev badge, a Development annotation callout points at the featured trail card, a trail row instance is selected and the Inspect panel shows a Playground preview of it and generated React code with a TrailRow props interface and the instance's title and details values" width="100%">
+  <p align="center"><sub><b>Developer Mode</b>: ready-for-dev status, annotations and React code where component properties become props · <code>examples/ridgeline-app.figcraft</code></sub></p>
 </td>
 <td width="50%" valign="top">
   <img src="docs/images/shot-5-vector.png" alt="Vector edit mode on a wave path with a gradient, tapered variable-width stroke: its anchor points, Bezier handles and the transform box of the selected points are visible, with the vector edit toolbar at the bottom; above it are a boolean-built mountain mark and an angular-gradient knot of excluded rings" width="100%">
@@ -127,8 +127,8 @@
   <p align="center"><sub><b>Boards</b>: a whiteboard file kind with sticky notes, templates, connectors, a shared timer and voting, in the same live sessions</sub></p>
 </td>
 <td width="50%" valign="top">
-  <img src="docs/images/shot-9-devmode-measure.png" alt="Dev Mode on the Ridgeline home screen with the featured trail card selected: red redlines kept on the canvas show 118.3 from the card to the search field, 62.1 from the card to the first trail row and 256.3 along the card's left side, and the Inspect panel's Measurements section lists the three with their values under an Add measurement menu" width="100%">
-  <p align="center"><sub><b>Dev Mode measurements</b>: redlines placed between layers or along a side, saved in the file and following the layers · <code>examples/ridgeline-app.figcraft</code></sub></p>
+  <img src="docs/images/shot-9-devmode-measure.png" alt="Developer Mode on the Ridgeline home screen with the featured trail card selected: red redlines kept on the canvas show 118.3 from the card to the search field, 62.1 from the card to the first trail row and 256.3 along the card's left side, and the Inspect panel's Measurements section lists the three with their values under an Add measurement menu" width="100%">
+  <p align="center"><sub><b>Developer Mode measurements</b>: redlines placed between layers or along a side, saved in the file and following the layers · <code>examples/ridgeline-app.figcraft</code></sub></p>
 </td>
 </tr>
 </table>
@@ -233,9 +233,10 @@ figcraft-cli commands --filter autoLayout
 # Let an agent drive it over MCP (headless, or attached to the running app)
 figcraft-cli mcp
 figcraft-cli mcp --attach 47800
+figcraft-cli mcp --install all
 ```
 
-The desktop app also offers a loopback-only control channel (`figcraft --control <port>`) for inspecting UI state, driving tools with pointer and key events, and taking screenshots. See [`docs/control-protocol.md`](docs/control-protocol.md), [`docs/mcp.md`](docs/mcp.md) and [`docs/cli.md`](docs/cli.md).
+The desktop app starts a loopback-only MCP control listener (`127.0.0.1:47800` by default, configurable under **Plugins ▸ Manage plugins… ▸ MCP** or **File ▸ Local MCP server…**, or via `figcraft --control <port>`) with 1-click setup for **Antigravity**, **Claude Code**, **Claude Desktop**, and **Codex** across macOS, Linux, and Windows. See [`docs/control-protocol.md`](docs/control-protocol.md), [`docs/mcp.md`](docs/mcp.md) and [`docs/cli.md`](docs/cli.md).
 
 ## Under the hood
 
@@ -245,7 +246,7 @@ The desktop app also offers a loopback-only control channel (`figcraft --control
 - **Runs in the browser:** the whole engine and UI compile to WebAssembly.
 - **Accessible:** screen readers get names, roles, values and states for the tools, layer rows, fields, dropdowns, tabs and menus (AccessKit on desktop), F6 moves the keyboard between the toolbar, layers, canvas and properties (Tab within them, Escape back to the canvas), the system's reduce-motion setting is honoured, and panel text meets WCAG AA contrast in both themes.
 - **Languages:** English, Russian and Turkish (reviewed by native speakers), and Spanish, French, German, Brazilian Portuguese, Japanese, Korean, Simplified Chinese, Czech, Indonesian, Georgian, Vietnamese and Bosnian drafts, picked in Preferences or taken from the system or browser and switched live; adding a language is one catalog file ([`docs/translating.md`](docs/translating.md)).
-- **Plugins:** sandboxed WebAssembly plugins (a metered, pure-Rust interpreter with a memory cap and no file or network access, in the browser too) that act through the same commands, each run one undo step, within the permissions their manifest asks for. A Rust SDK and four example plugins are in [`plugins/`](plugins); see [`docs/plugins.md`](docs/plugins.md).
+- **Plugins:** sandboxed WebAssembly plugins (a metered, pure-Rust interpreter with a memory cap and no file or network access, in the browser too) that act through the same commands, each run one undo step, within the permissions their manifest asks for. Includes a **Built-in Store** (`builtin`), local folder and server directories, in-app plugin scaffolding (**Plugins ▸ Manage plugins… ▸ Development**), hot reload, and a **Plugin Dev Console**. A Rust SDK and four example plugins are in [`plugins/`](plugins); see [`docs/plugins.md`](docs/plugins.md).
 - **Live sessions (preview):** share the open file from the app (Share ▸ Start sharing: online through a server, or on your local network), give the others the short join code it shows (or the invite link), and edit it together: everyone's changes sync live, with cursors, selections, avatars and follow, and undo takes back only your own changes. Others join from the desktop app (invite links open it) or from the browser build. See [`docs/collab-protocol.md`](docs/collab-protocol.md).
 - **A server of your own (preview):** `figcraft-server` keeps a team's files, publishes them from the app (File ▸ Publish to server…, or Share ▸ Online with your server in Preferences) and hands out share links and join codes that let people edit or only view; files survive restarts and apps reconnect where they were. No accounts yet: links are the access. Releases ship it for Linux, and the desktop app joins over `wss://`; [hosting it on a rented Linux server](docs/server.md#deploy-on-a-linux-server) takes a systemd unit and Caddy or nginx (or Docker). See [`docs/server.md`](docs/server.md).
 - **Never crashes:** no `unwrap`, `expect` or `panic` in shipped code, enforced by clippy; commands run behind a guard so a bug fails one action, not your session.

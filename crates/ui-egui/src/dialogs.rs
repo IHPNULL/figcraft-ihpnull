@@ -32,6 +32,7 @@ use menu_input::menu_input_dialog;
 pub mod branch_ui;
 pub mod credits;
 pub mod import_report;
+pub mod mcp_ui;
 pub mod missing_fonts;
 pub mod plugins_ui;
 pub mod sampled_color;
@@ -178,8 +179,10 @@ pub fn keys(app: &mut FigApp, ctx: &Context) {
         || u.import_report.is_some()
         || u.missing_fonts.is_some()
         || u.confirm_close
+        || matches!(u.close_tab, Some(crate::windows::TabClose::Ask(_)))
         || u.export_preview
         || u.shortcuts_panel
+        || u.mcp_window
         || u.preferences
         || u.about;
     if !open || !ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Escape)) {
@@ -194,7 +197,11 @@ pub fn keys(app: &mut FigApp, ctx: &Context) {
     {
         return;
     }
-    for flag in [&mut u.confirm_close, &mut u.export_preview, &mut u.shortcuts_panel, &mut u.preferences, &mut u.about] {
+    if matches!(u.close_tab, Some(crate::windows::TabClose::Ask(_))) {
+        u.close_tab = None;
+        return;
+    }
+    for flag in [&mut u.confirm_close, &mut u.export_preview, &mut u.shortcuts_panel, &mut u.mcp_window, &mut u.preferences, &mut u.about] {
         if std::mem::take(flag) {
             return;
         }
@@ -241,6 +248,7 @@ pub fn show(app: &mut FigApp, ctx: &Context) {
                 (tr("Show dimensions on objects"), prefs.show_dimensions, "pref.showDimensions"),
                 (tr("Use number keys for opacity"), prefs.number_keys_opacity, "pref.numberKeysOpacity"),
                 (tr("Scroll wheel zoom"), prefs.scroll_wheel_zoom, "pref.scrollWheelZoom"),
+                (tr("Invert zoom direction"), prefs.invert_zoom, "pref.invertZoom"),
                 (tr("Reduce motion"), prefs.reduce_motion, "pref.reduceMotion"),
             ] {
                 if crate::widgets::checkbox(ui, val, label) {
@@ -292,6 +300,15 @@ pub fn show(app: &mut FigApp, ctx: &Context) {
             });
             if prefs.publish_server.is_empty() {
                 crate::widgets::label(ui, tr("Online sharing is off: files are shared on the local network only."), t.text_secondary);
+            }
+            if !cfg!(target_arch = "wasm32") {
+                ui.add_space(8.0);
+                ui.horizontal(|ui| {
+                    ui.label(tr("Local MCP server"));
+                    if crate::widgets::button(ui, tr("Configure MCP & Harnesses…"), false, true).clicked() {
+                        app.ui.mcp_window = true;
+                    }
+                });
             }
             ui.add_space(8.0);
             ui.horizontal(|ui| {
@@ -400,11 +417,13 @@ pub fn show(app: &mut FigApp, ctx: &Context) {
         export_dialog(app, ctx);
     }
     color_profile_dialog(app, ctx);
+    crate::mcp_ui::show(app, ctx);
     crate::plugins_ui::show(app, ctx);
     crate::live::join_dialog(app, ctx);
     crate::live::publish_dialog(app, ctx);
     crate::online::dialogs(app, ctx);
     crate::windows::confirm_close(app, ctx);
+    crate::windows::confirm_close_tab(app, ctx);
 }
 
 /// Preferences ▸ Interface size: a size relative to the system's display scale (100 % is the

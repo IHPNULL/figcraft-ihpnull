@@ -6,6 +6,9 @@ pub const UI_SCALE_MIN: f64 = 0.75;
 
 pub const UI_SCALE_MAX: f64 = 3.0;
 
+/// Default localhost port for the desktop app's control and MCP server (`127.0.0.1:47800`).
+pub const DEFAULT_MCP_PORT: u16 = 47800;
+
 /// `scale` kept between [`UI_SCALE_MIN`] and [`UI_SCALE_MAX`]; not a finite number: `None`.
 /// The interface sizes Preferences offers, relative to the system's scale (the keys step through
 /// them; `pref.uiScale` takes any size up to [`UI_SCALE_MAX`]).
@@ -36,6 +39,9 @@ pub struct Prefs {
     /// A mouse wheel zooms the canvas about the pointer, and Cmd/Ctrl+wheel scrolls it (off: the
     /// other way round). Trackpads are unchanged.
     pub scroll_wheel_zoom: bool,
+    /// Wheel zoom goes the other way: Cmd/Ctrl+wheel (and a plain mouse wheel with Scroll wheel
+    /// zoom on) zooms out where it would zoom in. A trackpad pinch is unchanged.
+    pub invert_zoom: bool,
     /// "system" by default; an explicit "light" or "dark" choice stays saved.
     pub theme: String,
     /// The widths of the main window's left and right panels (the interface keeps them within its
@@ -62,6 +68,10 @@ pub struct Prefs {
     pub auto_save: bool,
     /// The desktop app starts on the Home screen instead of in a new file.
     pub start_on_home: bool,
+    /// Whether the desktop app listens on localhost for MCP / control connections (`pref.mcp`).
+    pub mcp_enabled: bool,
+    /// Localhost TCP port for the desktop app's MCP / control server (`127.0.0.1:<mcp_port>`).
+    pub mcp_port: u16,
     /// `figcraft://` invite links open this app (`collab.registerLinks`); `None`: on for installed
     /// builds, off for development builds.
     pub invite_links: Option<bool>,
@@ -136,6 +146,7 @@ impl Default for Prefs {
             number_keys_opacity: true,
             show_dimensions: true,
             scroll_wheel_zoom: false,
+            invert_zoom: false,
             theme: "system".into(),
             panel_widths: (240.0, 240.0),
             pages_height: None,
@@ -145,6 +156,8 @@ impl Default for Prefs {
             ui_scale: 1.0,
             auto_save: false,
             start_on_home: false,
+            mcp_enabled: false,
+            mcp_port: DEFAULT_MCP_PORT,
             invite_links: None,
             plugins: Vec::new(),
             plugin_settings: BTreeMap::new(),
@@ -171,6 +184,18 @@ impl Default for Prefs {
 pub struct UiRequest {
     pub kind: String,
     pub data: Value,
+}
+
+/// What Edit ▸ Set default properties keeps: the properties new layers drawn with the tools take,
+/// as Copy properties copies them (fills, strokes and their settings, effects, opacity, blend,
+/// corners; for text also the font, size, line height and letter spacing). One set for shapes
+/// (rectangles, ellipses, polygons and stars), set from any layer but text, and one for text.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct DefaultProps {
+    /// For new rectangles, ellipses, polygons and stars.
+    pub shape: Option<Value>,
+    /// For new text.
+    pub text: Option<Value>,
 }
 
 /// Clipboard contents (internal; the UI mirrors to the system clipboard).

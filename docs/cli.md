@@ -126,7 +126,7 @@ page 1 "Screens": 380 nodes, 4 top-level
   written from public format notes, including variables with their modes and bindings and shared
   styles with their layer links. Checked by opening it again in FigCraft and, on the example
   documents and small test files, in other software; other apps may not open every file. What was
-  left out (comments, Dev Mode data, some bindings and settings…) is printed as `note:` lines;
+  left out (comments, Developer Mode data, some bindings and settings…) is printed as `note:` lines;
   `docs/file-format-parity.md` lists what was checked and what is unchecked.
 - `--format xml` (or an `<out>` ending in `.xml`) writes an Android Vector Drawable, e.g.
   `figcraft-cli export app.figcraft --node Icon -o ic_icon.xml`. What the format can't draw is
@@ -273,10 +273,12 @@ the flags leave the output identical when nothing strays outside the roots.
 Every command with its label, shortcut, undoable flag (`*`) and parameter docs; `--json` for
 machines.
 
-### `mcp [--attach PORT] [--automation-read-root DIR]… [--automation-write-root DIR]…`
+### `mcp [--attach PORT] [--status] [--install HARNESS] [--port PORT] [--automation-read-root DIR]… [--automation-write-root DIR]…`
 
 Serve MCP on stdio: headless by default, or attached to a running app started with
-`figcraft --control PORT`. See [mcp.md](mcp.md). The automation roots (each repeatable; existing
+`figcraft --control PORT` (or with its default local MCP control server on port `47800`). See [mcp.md](mcp.md).
+With `--status` or `--install <antigravity|claude-code|claude-desktop|codex|all>` (and optional `--port`, default `47800`, or `0` for headless), inspects or configures the local MCP client configuration files on macOS, Linux, and Windows.
+The automation roots (each repeatable; existing
 folders) confine the files the agent's calls read (inside a read or write root) and write (inside a
 write root); everything else is refused ([mcp.md › Confining file access](mcp.md#confining-file-access)).
 They apply to the headless session only, and that is why `--attach` refuses them: an attached server
@@ -287,9 +289,12 @@ live sessions (`collab.*`: without a key on a server open to the public, with `c
 `collab.manageFile` for the owner token and `collab.report`) and use plugin directories
 (`plugin.directory.*`); the one-shot `run` can't (no network link).
 
-### `plugin publish <folder> --server ws://host:port/[?key=KEY]`
+### `plugin new|build|run|publish`
 
-Publishes a plugin folder (`figcraft-plugin.json`, the module its `main` names, an optional `assets/`
+- `figcraft-cli plugin new <folder> [--name NAME] [--id ID] [--template command|panel|widget|exporter]`: scaffolds a new Rust WebAssembly plugin project with `Cargo.toml`, `src/lib.rs`, `figcraft-plugin.json` and a starter `.wasm` binary.
+- `figcraft-cli plugin build [folder]`: compiles the plugin to `wasm32-unknown-unknown` in release mode and copies the `.wasm` module next to `figcraft-plugin.json`.
+- `figcraft-cli plugin run <folder> [--command ID] [--params JSON] [--in FILE] [--out FILE]`: imports and runs a plugin command headlessly, printing its JSON output, logs, host calls and fuel consumption.
+- `figcraft-cli plugin publish <folder> --server ws://host:port/[?key=KEY]`: publishes a plugin folder (`figcraft-plugin.json`, the module its `main` names, an optional `assets/`
 folder) to a `figcraft-server`'s plugin directory as a new version, and prints its name, version,
 size and SHA-256. The server's key comes from the address or, better, from the
 `FIGCRAFT_SERVER_KEY` environment variable (it then stays out of the shell history and process
@@ -299,7 +304,7 @@ lists); it is never printed. The bundle is checked before it is sent and again b
 ### `connect publish <file.figcraft> [--mappings FILE] [--dry-run]`
 
 Publishes a code repository's component mappings to a design file: each link in the mappings file
-(default `figcraft.connect.json` in the current folder, the file Dev Mode's **Export code
+(default `figcraft.connect.json` in the current folder, the file Developer Mode's **Export code
 connections** and `codeConnect.export` write) connects every component or component set of that
 name to its code component for a language, replacing its link for that language, and the file is
 saved in place, written whole or not at all, with its version history. Links that don't fit (no

@@ -24,6 +24,11 @@ pub trait Services {
     fn download(&mut self, _name: &str, _bytes: &[u8]) -> bool {
         false
     }
+    /// The document file a host page opened, where the app runs inside one (the browser's host
+    /// mode): a Save of that document keeps this name instead of the document's own.
+    fn host_file(&self) -> Option<String> {
+        None
+    }
     /// A folder to write several files into.
     fn pick_folder(&mut self, _title: &str) -> DialogFuture {
         Box::pin(std::future::ready(None))
@@ -86,6 +91,18 @@ pub trait Services {
     /// Ask for them (the browser asks the person): they join the font list by name, each read when
     /// text uses it.
     fn ask_for_local_fonts(&mut self) {}
+    /// Live status of the local MCP/control server: `(listening_port, active_connections, last_error)`.
+    /// `listening_port == 0` when stopped or failed to bind.
+    fn mcp_server_status(&self) -> Option<(u16, usize, Option<String>)> {
+        None
+    }
+    /// Start, stop or rebind the local MCP/control server when the user toggles it or changes its port.
+    fn mcp_server_apply(&mut self, _enabled: bool, _port: u16) {}
+    /// Build a Rust plugin project (`cargo build --release --target wasm32-unknown-unknown`) and copy
+    /// the resulting `.wasm` to its manifest's `main` path.
+    fn build_plugin(&mut self, _manifest_or_dir: &std::path::Path) -> Result<String, String> {
+        Err("building plugins requires the desktop app".into())
+    }
 }
 
 pub type DialogFuture = Pin<Box<dyn Future<Output = Option<PathBuf>>>>;
